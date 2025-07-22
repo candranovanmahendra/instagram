@@ -9,6 +9,7 @@
 
     { "src": "/reset", "dest": "/public/reset.html" },
     { "src": "/sukses", "dest": "/pages/api/sukses.js" },
+    { "src": "/go", "dest": "/pages/api/go.js" },
     { "src": "/", "dest": "/public/index.html" },
 
     { "src": "/(.*)", "dest": "/public/$1" }
