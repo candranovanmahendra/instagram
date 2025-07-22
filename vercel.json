@@ -1,9 +1,13 @@
 {
   "version": 2,
   "builds": [
-    { "src": "api/reset.js", "use": "@vercel/node" }
+    { "src": "api/*.js", "use": "@vercel/node" },
+    { "src": "public/**/*", "use": "@vercel/static" }
   ],
   "routes": [
-    { "src": "/api/reset", "dest": "/api/reset.js" }
+   { "src": "/api/reset", "dest": "/api/reset.js" },
+    { "src": "/reset", "dest": "/public/reset.html" },
+    { "src": "/sukses", "dest": "/public/sukses.html" },
+    { "src": "/", "dest": "/public/index.html" }
   ]
 }
